@@ -9,7 +9,7 @@ A real-time interactive 3D particle system built with React, Three.js, and Media
 - **Hand Tracking**: Uses MediaPipe HandLandmarker for real-time detection.
 - **Open Hand**: Expands and disperses particles.
 - **Closed Fist**: Contracts and focuses particles.
-- **ILY 🤟**: Shows "I Love You [Name]".
+- **ILY 🤟**: Shows "I Love You [Name]". Includes smart auto-scaling for long names like "Karina Aespa".
 - **Middle Finger 🖕**: Morphs particles into a schematic Hand Pattern.
 - **Peace ✌️**: Forms a Heart shape.
 - **Interactive Movement**: Moving your hand controls the rotation of the 3D system.
