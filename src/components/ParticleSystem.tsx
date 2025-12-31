@@ -6,7 +6,7 @@ import { useStore, gestureState } from '../store/useStore';
 const PARTICLE_COUNT = 15000;
 
 // Helper to generate text points
-const generateTextPoints = (text: string, count: number): Float32Array => {
+const generateTextPoints = (text: string, count: number, maxFontSize: number = 140): Float32Array => {
   const canvas = document.createElement('canvas');
   const size = 256; 
   canvas.width = size * 4; 
@@ -14,14 +14,44 @@ const generateTextPoints = (text: string, count: number): Float32Array => {
   const ctx = canvas.getContext('2d');
   if (!ctx) return new Float32Array(count * 3);
   
+  const lines = text.split('\n');
+  
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
-  ctx.font = 'bold 180px Arial';
+  let fontSize = maxFontSize;
+  ctx.font = `bold ${fontSize}px Arial`;
+  
+  // Measure max width and scale down if needed
+  let maxWidth = 0;
+  lines.forEach(line => {
+    const w = ctx.measureText(line).width;
+    if (w > maxWidth) maxWidth = w;
+  });
+  
+  if (maxWidth > canvas.width * 0.9) {
+    fontSize = Math.floor(fontSize * (canvas.width * 0.9 / maxWidth));
+  }
+  
+  ctx.font = `bold ${fontSize}px Arial`;
   ctx.fillStyle = 'white';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+  
+  const lineHeight = fontSize * 1.1;
+  const totalHeight = lines.length * lineHeight;
+  const startY = (canvas.height - totalHeight) / 2 + lineHeight / 2;
+  
+  lines.forEach((line, i) => {
+    // Adjust Y for multiple lines to be centered nicely
+    // If only 1 line, center is height/2. If 2 lines, spread around center.
+    // The startY calculation above actually handles "top-ish" of the block. 
+    // Let's rely on standard flow:
+    
+    // Correction for vertical alignment
+    const y = lines.length === 1 ? canvas.height / 2 : startY + i * lineHeight;
+    ctx.fillText(line, canvas.width / 2, y);
+  });
   
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
@@ -132,7 +162,7 @@ const ParticleSystem: React.FC = () => {
     const random = new Float32Array(PARTICLE_COUNT * 3);
     const heart = new Float32Array(PARTICLE_COUNT * 3);
     // Fuck You (Middle Finger Emoji Pattern)
-    const fuckYou = generateTextPoints('🖕', PARTICLE_COUNT);
+    const fuckYou = generateTextPoints('🖕', PARTICLE_COUNT, 180);
 
     for (let i = 0; i < PARTICLE_COUNT; i++) {
         const i3 = i * 3;
@@ -204,7 +234,7 @@ const ParticleSystem: React.FC = () => {
 
   useEffect(() => {
     if (!meshRef.current) return;
-    const textPoints = generateTextPoints(`I Love You\n${customName}`, PARTICLE_COUNT);
+    const textPoints = generateTextPoints(`I Love You\n${customName}`, PARTICLE_COUNT, 130);
     
     const geometry = meshRef.current.geometry;
     geometry.setAttribute('positionText', new THREE.BufferAttribute(textPoints, 3));
